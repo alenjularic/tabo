@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Tabo">
+  <title>Tabo</title>
+  <!--
+    A browser tab with a neon green sparkle. Black base, green sparkle.
+
+    Reads as a browser window with a tab strip, not a folder: the filled tab sits
+    inside a top band that spans the full width and meets a divider line. A
+    filled block in the top-left corner of a plain rounded box is the folder
+    glyph, which is what an earlier attempt accidentally drew.
+
+    The base is black by default and flips to near-white under a dark theme,
+    because pure black is invisible on Firefox's dark toolbar (#2b2a33). If the
+    media query does not apply — colour-scheme support for SVG-as-image has been
+    patchy historically — it degrades to black everywhere, which is the intended
+    look rather than a broken one.
+
+    The sparkle keeps a fixed green in both schemes: it is the mark, and it has
+    enough contrast against light and dark alike.
+
+    viewBox is required. Without it the SVG has no scalable coordinate system and
+    only happens to work because consumers request explicit pixel sizes.
+  -->
+  <style>
+    .stroke { stroke: #000000; fill: none; }
+    .solid { fill: #000000; }
+    @media (prefers-color-scheme: dark) {
+      .stroke { stroke: #FBFBFE; }
+      .solid { fill: #FBFBFE; }
+    }
+  </style>
+
+  <g class="stroke" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
+    <!-- window -->
+    <rect x="3.3" y="7.6" width="25.4" height="20.2" rx="3.2" />
+    <!-- divider between the tab strip and the page -->
+    <path d="M4.6 15.4h22.8" stroke-width="1.5" />
+  </g>
+
+  <!-- the active tab, filling the strip down to the divider -->
+  <rect class="solid" x="6.1" y="9.9" width="8.6" height="5.5" rx="1.2" />
+
+  <!-- soft glow: a scaled low-opacity copy rather than a blur filter, which goes
+       muddy at icon sizes. The explicit fill matters — without it this path
+       defaults to black and the glow reads as a grey shadow instead. -->
+  <path
+    fill="#3DFF9E"
+    opacity="0.28"
+    d="M25.6 0 Q27.3 5.4 31.6 7 Q27.3 8.6 25.6 14 Q23.9 8.6 19.6 7 Q23.9 5.4 25.6 0z"
+  />
+  <!-- sparkle -->
+  <path
+    fill="#3DFF9E"
+    d="M25.6 1.8 Q26.8 5.9 29.6 7 Q26.8 8.1 25.6 12.2 Q24.4 8.1 21.6 7 Q24.4 5.9 25.6 1.8z"
+  />
+  <circle cx="25.6" cy="7" r="1" fill="#EAFFF3" />
+</svg>

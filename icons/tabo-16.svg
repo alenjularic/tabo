@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" role="img" aria-label="Tabo">
+  <title>Tabo</title>
+  <!--
+    The small glyph, for 16 and 32px slots. Not a scaled copy of tabo.svg: at
+    this size that icon's strip divider merges with the tab into a solid bar.
+    This keeps the same window-plus-tab language but drops the divider, leaving
+    three chunky shapes and no detail thinner than about 2px.
+
+    Black base, green sparkle, with the base flipping to near-white under a dark
+    theme — pure black is invisible on Firefox's dark toolbar. If the media query
+    does not apply it degrades to black everywhere, the intended look rather than
+    a broken one.
+
+    Two rejected alternatives, for the record: a tab standing on a baseline reads
+    as a top hat, and two tabs side by side read as hills. Enclosing the tab
+    inside the window outline is what makes it a browser.
+  -->
+  <style>
+    .stroke { stroke: #000000; fill: none; }
+    .solid { fill: #000000; }
+    @media (prefers-color-scheme: dark) {
+      .stroke { stroke: #FBFBFE; }
+      .solid { fill: #FBFBFE; }
+    }
+  </style>
+
+  <!-- window -->
+  <rect class="stroke" x="1.6" y="4.2" width="12.4" height="9.4" rx="2" stroke-width="1.9" />
+
+  <!-- the tab, inside the window's top band -->
+  <rect class="solid" x="3.4" y="5.9" width="4.9" height="2.7" rx="0.7" />
+
+  <!-- sparkle, no glow layer: at 16px a translucent halo only muddies the edge -->
+  <path fill="#3DFF9E" d="M12.6 1 Q13.3 3.4 15.5 4.1 Q13.3 4.8 12.6 7.2 Q11.9 4.8 9.7 4.1 Q11.9 3.4 12.6 1z" />
+</svg>

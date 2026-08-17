@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tabo</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --fg: #15141a;
+        --muted: #5b5b66;
+        --bg: #ffffff;
+        --line: #d7d7db;
+        --accent: #0060df;
+        --warn-bg: #fff4d3;
+        --warn-fg: #5c3c00;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --fg: #fbfbfe;
+          --muted: #b1b1bb;
+          --bg: #2b2a33;
+          --line: #52525e;
+          --accent: #00ddff;
+          --warn-bg: #45351a;
+          --warn-fg: #ffe8a6;
+        }
+      }
+      body {
+        width: 20rem;
+        margin: 0;
+        padding: 0.875rem;
+        font: message-box;
+        font-size: 0.8125rem;
+        color: var(--fg);
+        background: var(--bg);
+      }
+      h1 {
+        font-size: 0.8125rem;
+        margin: 0 0 0.75rem;
+      }
+      section {
+        border-top: 1px solid var(--line);
+        padding: 0.75rem 0;
+      }
+      section:first-of-type {
+        border-top: none;
+        padding-top: 0;
+      }
+      label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      p {
+        margin: 0.5rem 0 0;
+        color: var(--muted);
+      }
+      select {
+        font: inherit;
+        margin-top: 0.5rem;
+      }
+      button {
+        font: inherit;
+        margin-top: 0.5rem;
+        padding: 0.25rem 0.625rem;
+      }
+      .warn {
+        background: var(--warn-bg);
+        color: var(--warn-fg);
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin-top: 0.5rem;
+      }
+      .hidden {
+        display: none;
+      }
+      .row {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .depth {
+        display: grid;
+        grid-template-columns: auto 1fr auto 1fr;
+        gap: 0.375rem 0.5rem;
+        align-items: center;
+        margin-top: 0.375rem;
+      }
+      .depth select {
+        margin-top: 0;
+        width: 100%;
+      }
+      .note {
+        margin-top: 0.75rem;
+        padding: 0.5rem;
+        border-left: 3px solid var(--accent);
+        background: color-mix(in srgb, var(--accent) 8%, transparent);
+        color: var(--fg);
+        line-height: 1.45;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Tabo</h1>
+
+    <section id="unsupported" class="hidden">
+      <div class="warn">
+        This version of Firefox has no tab groups API, so recency groups are
+        unavailable. Unloading still works.
+      </div>
+    </section>
+
+    <section>
+      <label>
+        <input type="checkbox" id="bucketsEnabled" />
+        Group loose tabs by when they were last active
+      </label>
+      <div id="reorderWarning" class="warn hidden">
+        This reorders the tabs in your strip. Pinned tabs and tabs already in
+        your own groups are left alone.
+      </div>
+      <label style="margin-top: 0.5rem">
+        <input type="checkbox" id="collapseOld" />
+        Keep older groups collapsed
+      </label>
+
+      <p style="margin-top: 0.75rem">How far back to show, per level:</p>
+      <div class="depth">
+        <label for="depthDays">Days</label>
+        <select id="depthDays"></select>
+        <label for="depthWeeks">Weeks</label>
+        <select id="depthWeeks"></select>
+        <label for="depthMonths">Months</label>
+        <select id="depthMonths"></select>
+        <label for="depthYears">Years</label>
+        <select id="depthYears"></select>
+      </div>
+      <p id="depthPreview"></p>
+
+      <div class="row">
+        <button id="reorganize">Reorganise now</button>
+        <button id="undo">Undo grouping</button>
+      </div>
+      <p id="undoNote"></p>
+
+      <!-- User-visible explanation of what renaming a Tabo group does. This
+           behaviour is a consequence of using Firefox's own tab groups and
+           identifying ours purely by the clock marker, so it is worth stating
+           plainly rather than letting people discover it by accident. -->
+      <div class="note">
+        <strong>Tabo's groups are ordinary Firefox tab groups</strong>, marked
+        with a 🕒. Rename one — dropping the clock — and it becomes
+        <em>your</em> group: Tabo stops adding tabs to it, stops moving it, stops
+        renaming it, and never touches it again. That is the way to keep a week,
+        month or year group permanently. Keep the 🕒 and Tabo will rename it back
+        to match the dates on its next pass.
+      </div>
+    </section>
+
+    <section>
+      <label for="threshold">Unload tabs not used for</label>
+      <select id="threshold">
+        <option value="">Never</option>
+      </select>
+      <p id="unloadedCount"></p>
+      <div class="row">
+        <button id="unloadNow">Unload now</button>
+      </div>
+      <p>
+        Unloading frees a tab's memory and keeps it in the strip. Music, calls,
+        screen sharing, pinned tabs and the tab you are on are never unloaded.
+      </p>
+    </section>
+
+    <section>
+      <label for="closeThreshold">Close tabs not used for</label>
+      <select id="closeThreshold">
+        <option value="">Never</option>
+      </select>
+      <div class="warn" id="closeWarning">
+        Closing is permanent. Firefox can reopen closed tabs with
+        <strong>Ctrl+Shift+T</strong>, but only for 14 days — export a backup
+        first if you want them longer.
+      </div>
+      <p id="closeNote"></p>
+      <div class="row">
+        <button id="closeBacklog" class="hidden"></button>
+      </div>
+    </section>
+
+    <section>
+      <label>Session backup</label>
+      <div class="row">
+        <button id="exportBtn">Export…</button>
+        <button id="importBtn">Import…</button>
+        <input type="file" id="importFile" accept=".json,application/json" class="hidden" />
+      </div>
+      <p id="portableNote">
+        Export writes every window, group and tab to a JSON file — your own
+        groups too, not just Tabo's. Import opens each saved window fresh,
+        leaving your current tabs alone, and restores tabs unloaded so a big
+        file costs no memory.
+      </p>
+    </section>
+
+    <!-- In-popup confirmation. window.confirm() is unreliable here: the modal
+         takes focus and a Firefox extension popup closes on focus loss, which
+         can tear down this document mid-handler. -->
+    <div id="confirmBox" class="warn hidden">
+      <div id="confirmText"></div>
+      <div class="row">
+        <button id="confirmYes">Yes, do it</button>
+        <button id="confirmNo">Cancel</button>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

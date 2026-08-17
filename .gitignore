@@ -1,0 +1,27 @@
+# Build output — regenerate with `npm run build`, never commit
+web-ext-artifacts/
+node_modules/
+.DS_Store
+
+# AMO signing credentials must never be committed. Keep them in this file,
+# which is sourced by hand before `npm run sign`, or in your shell env.
+.env
+.web-ext-config.mjs
+
+# web-ext's upload cache: an AMO upload UUID plus a hash of the last XPI, used
+# to skip re-uploading an identical build. Local state tied to one AMO account,
+# not source. Not a secret, but not worth committing either.
+.amo-upload-uuid
+
+# Working notes, design docs and API research — kept locally, not published
+docs/
+
+# Claude Code / agent tooling
+CLAUDE.md
+.claude/
+.claude-*
+AGENTS.md
+GEMINI.md
+.cursor/
+.cursorrules
+.aider*

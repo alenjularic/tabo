@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Tabo",
+  "version": "0.1.1",
+  "description": "Sorts your loose tabs into recency groups and unloads the ones you stopped using.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "tabo@yafa",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "permissions": [
+    "tabs",
+    "tabGroups",
+    "storage",
+    "alarms",
+    "downloads"
+  ],
+  "background": {
+    "scripts": [
+      "src/buckets.js",
+      "src/planner.js",
+      "src/unload.js",
+      "src/portable.js",
+      "src/close.js",
+      "src/settings.js",
+      "src/background.js"
+    ]
+  },
+  "icons": {
+    "48": "icons/tabo.svg",
+    "96": "icons/tabo.svg"
+  },
+  "action": {
+    "default_title": "Tabo",
+    "default_popup": "src/popup.html",
+    "default_icon": {
+      "16": "icons/tabo-16.svg",
+      "32": "icons/tabo-16.svg"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "tabo",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Firefox extension that groups loose tabs by recency and unloads unused ones.",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "lint": "npx --yes addons-linter@10 .",
+    "start": "npx --yes web-ext@8 run --source-dir . --ignore-files test docs 'test/**' 'docs/**' package.json CLAUDE.md README.md",
+    "build": "npx --yes web-ext@8 build --source-dir . --overwrite-dest --ignore-files test docs 'test/**' 'docs/**' package.json CLAUDE.md README.md .gitignore .env",
+    "sign": "npx --yes web-ext@8 sign --source-dir . --channel unlisted --ignore-files test docs 'test/**' 'docs/**' package.json CLAUDE.md README.md .gitignore .env"
+  }
+}
