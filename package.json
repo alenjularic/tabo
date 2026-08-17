@@ -1,6 +1,6 @@
 {
   "name": "tabo",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Firefox extension that groups loose tabs by recency and unloads unused ones.",
   "scripts": {

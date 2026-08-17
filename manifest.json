@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tabo",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Sorts your loose tabs into recency groups and unloads the ones you stopped using.",
   "browser_specific_settings": {
     "gecko": {
