@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tabo — import session</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --fg: #15141a;
+        --muted: #5b5b66;
+        --bg: #ffffff;
+        --card: #f9f9fb;
+        --line: #d7d7db;
+        --accent: #0060df;
+        --warn-bg: #fff4d3;
+        --warn-fg: #5c3c00;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --fg: #fbfbfe;
+          --muted: #b1b1bb;
+          --bg: #1c1b22;
+          --card: #2b2a33;
+          --line: #52525e;
+          --accent: #00ddff;
+          --warn-bg: #45351a;
+          --warn-fg: #ffe8a6;
+        }
+      }
+      body {
+        margin: 0;
+        padding: 2.5rem 1.5rem;
+        font: message-box;
+        font-size: 0.9375rem;
+        line-height: 1.5;
+        color: var(--fg);
+        background: var(--bg);
+      }
+      main {
+        max-width: 34rem;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.375rem;
+        margin: 0 0 0.25rem;
+      }
+      .sub {
+        color: var(--muted);
+        margin: 0 0 1.75rem;
+      }
+      section {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 0.5rem;
+        padding: 1.125rem 1.25rem;
+        margin-bottom: 1rem;
+      }
+      h2 {
+        font-size: 0.9375rem;
+        margin: 0 0 0.625rem;
+      }
+      button {
+        font: inherit;
+        padding: 0.4375rem 0.875rem;
+        border-radius: 0.25rem;
+      }
+      table {
+        border-collapse: collapse;
+        margin: 0.5rem 0 0;
+      }
+      td {
+        padding: 0.125rem 1.25rem 0.125rem 0;
+      }
+      td:first-child {
+        color: var(--muted);
+      }
+      .warn {
+        background: var(--warn-bg);
+        color: var(--warn-fg);
+        padding: 0.625rem 0.75rem;
+        border-radius: 0.25rem;
+        margin-top: 0.75rem;
+      }
+      .hidden {
+        display: none;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      input[type="file"] {
+        font: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Import a Tabo session</h1>
+      <p class="sub">
+        This page exists because Firefox closes an extension popup the moment a
+        file picker opens, so the import has to live in a tab.
+      </p>
+
+      <section>
+        <h2>1. Choose a file</h2>
+        <input type="file" id="file" accept=".json,application/json" />
+        <p id="fileError" class="warn hidden"></p>
+      </section>
+
+      <section id="preview" class="hidden">
+        <h2>2. What is in it</h2>
+        <table id="counts"></table>
+        <p id="dropped" class="warn hidden"></p>
+        <div class="warn">
+          Each saved window opens as a <strong>new window</strong>. Your current
+          tabs are not touched, moved or closed. Restored tabs come back
+          unloaded, so nothing is fetched until you click it.
+        </div>
+        <p><button id="go">Import</button></p>
+      </section>
+
+      <section id="done" class="hidden">
+        <h2>Done</h2>
+        <p id="result"></p>
+      </section>
+    </main>
+
+    <script src="portable.js"></script>
+    <script src="import.js"></script>
+  </body>
+</html>

@@ -284,45 +284,11 @@ el("exportBtn").addEventListener("click", async () => {
   el("exportBtn").disabled = false;
 });
 
-el("importBtn").addEventListener("click", () => el("importFile").click());
-
-el("importFile").addEventListener("change", async (event) => {
-  const file = event.target.files && event.target.files[0];
-  if (!file) return;
-  event.target.value = ""; // so re-picking the same file fires again
-
-  let data;
-  try {
-    data = JSON.parse(await file.text());
-  } catch (e) {
-    el("portableNote").textContent = "That file is not valid JSON.";
-    return;
-  }
-
-  const ok = await confirmInPopup(
-    "Import tabs from " + file.name + "? Each saved window opens as a new window. " +
-      "Your current tabs are not touched."
-  );
-  if (!ok) return;
-
-  el("importBtn").disabled = true;
-  try {
-    const r = await browser.runtime.sendMessage({ type: "importSession", data });
-    if (!r.ok) {
-      el("portableNote").textContent = r.error;
-    } else {
-      // Say out loud what was dropped rather than reporting a clean success.
-      const notes = [];
-      if (r.skippedTabs) notes.push(r.skippedTabs + " skipped (not a web page)");
-      if (r.truncated) notes.push("file truncated at the tab limit");
-      el("portableNote").textContent =
-        "Imported " + r.tabs + " tabs into " + r.windowsCreated + " window(s)" +
-        (notes.length ? " — " + notes.join(", ") : ".");
-    }
-  } catch (e) {
-    el("portableNote").textContent = "Import failed: " + e;
-  }
-  el("importBtn").disabled = false;
+// Firefox dismisses this panel the instant a file picker takes focus (bug
+// 1378527), so the file input cannot live here. Open the import page in a tab.
+el("importBtn").addEventListener("click", async () => {
+  await browser.tabs.create({ url: browser.runtime.getURL("src/import.html") });
+  window.close();
 });
 
 el("unloadNow").addEventListener("click", async () => {
