@@ -11,6 +11,9 @@
 (function (root) {
   const FORMAT = 1;
 
+  // Same marker the bucket labels use; imported groups have it stripped.
+  const MARKER = root.TaboBuckets.MARKER;
+
   // Only schemes tabs.create will actually accept. ext-tabs.js rejects
   // privileged about: URLs outright ("Illegal URL"), and javascript: must never
   // be resurrected from a file on disk.
@@ -42,6 +45,21 @@
     // anything that is not plainly http(s), not to normalise.
     const lower = url.toLowerCase();
     return IMPORTABLE_SCHEMES.some((s) => lower.startsWith(s + "//"));
+  }
+
+  // Imported groups lose Tabo's clock marker, and this is deliberate.
+  //
+  // tabs.create cannot set lastAccessed, and a never-selected tab's timestamp is
+  // its creation time — so every imported tab reads as brand new no matter how
+  // old it was when exported. Restored as a marked bucket, the next reconcile
+  // pass would compute "This week" for all of them and merge a whole archive
+  // into one group within fifteen minutes.
+  //
+  // Dropping the marker makes the group the user's own, which Tabo never touches.
+  // The archive is preserved exactly as exported, and the user can add the clock
+  // back by hand if they want it live again.
+  function restoredTitle(title) {
+    return title.startsWith(MARKER) ? title.slice(MARKER.length) : title;
   }
 
   function tabRecord(tab) {
@@ -88,7 +106,21 @@
 
       // A group with no exportable tabs cannot be recreated — groups cannot be
       // empty in Firefox — so it is dropped rather than written out.
-      const groups = Array.from(groupsById.values()).filter((g) => g.tabs.length);
+      //
+      // Sorted by strip position, derived from the lowest tab index each group
+      // holds, so the file preserves left-to-right order: oldest bucket first,
+      // the current week last. tabGroups.query() must not be trusted for this —
+      // its order is undocumented and only incidentally matches the strip.
+      const order = new Map();
+      for (const tab of snapshot.tabs || []) {
+        if (!groupsById.has(tab.groupId)) continue;
+        const at = order.get(tab.groupId);
+        if (at === undefined || tab.index < at) order.set(tab.groupId, tab.index);
+      }
+      const groups = Array.from(groupsById.entries())
+        .filter(([, g]) => g.tabs.length)
+        .sort((a, b) => (order.get(a[0]) ?? Infinity) - (order.get(b[0]) ?? Infinity))
+        .map(([, g]) => g);
 
       windows.push({ groups, loose, pinned });
     }
@@ -115,7 +147,7 @@
       return { ok: false, error: "File has no windows to import." };
     }
 
-    const stats = { tabs: 0, groups: 0, windows: 0, skippedTabs: 0, truncated: false };
+    const stats = { tabs: 0, groups: 0, windows: 0, skippedTabs: 0, unmarked: 0, truncated: false };
     const plan = [];
 
     for (const rawWindow of raw.windows.slice(0, MAX_WINDOWS)) {
@@ -145,8 +177,10 @@
         if (!rawGroup || typeof rawGroup !== "object") continue;
         const tabs = take(rawGroup.tabs);
         if (!tabs.length) continue; // Firefox destroys empty groups on sight
+        const title = restoredTitle(clip(rawGroup.title));
+        if (title !== clip(rawGroup.title)) stats.unmarked++;
         groups.push({
-          title: clip(rawGroup.title),
+          title,
           color: VALID_COLORS.includes(rawGroup.color) ? rawGroup.color : "grey",
           collapsed: !!rawGroup.collapsed,
           tabs,
@@ -168,6 +202,8 @@
 
   root.TaboPortable = {
     FORMAT,
+    MARKER,
+    restoredTitle,
     VALID_COLORS,
     IMPORTABLE_SCHEMES,
     MAX_WINDOWS,

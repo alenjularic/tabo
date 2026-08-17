@@ -3,6 +3,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
+require("../src/buckets.js");
 require("../src/portable.js");
 const T = globalThis.TaboPortable;
 
@@ -46,6 +47,86 @@ test("export captures groups, loose and pinned tabs separately", () => {
   assert.equal(w.groups[0].color, "purple");
   assert.equal(w.groups[0].collapsed, true);
   assert.deepEqual(w.groups[0].tabs.map((t) => t.url), ["https://in.test/"]);
+});
+
+test("exported groups are ordered by strip position, oldest bucket first", () => {
+  const M = T.MARKER;
+  // tabGroups.query() order is undocumented, so feed it deliberately scrambled.
+  const groups = [
+    group({ id: 3, title: M + "This week" }),
+    group({ id: 1, title: M + "2024" }),
+    group({ id: 2, title: M + "June 2026" }),
+  ];
+  const tabs = [
+    tab({ index: 0, groupId: 1, url: "https://old.test/" }),
+    tab({ index: 1, groupId: 2, url: "https://mid.test/" }),
+    tab({ index: 2, groupId: 3, url: "https://new.test/" }),
+  ];
+  const out = T.buildExport([{ windowId: 1, groups, tabs }]);
+  assert.deepEqual(
+    out.windows[0].groups.map((g) => g.title),
+    [M + "2024", M + "June 2026", M + "This week"],
+    "order comes from tab indices, never from the order query() happened to return"
+  );
+});
+
+test("a group's position is its lowest tab index, not its first-seen tab", () => {
+  const groups = [group({ id: 1, title: "B" }), group({ id: 2, title: "A" })];
+  const tabs = [
+    tab({ index: 9, groupId: 1, url: "https://b1.test/" }),
+    tab({ index: 2, groupId: 2, url: "https://a1.test/" }),
+    tab({ index: 8, groupId: 1, url: "https://b2.test/" }),
+    tab({ index: 3, groupId: 2, url: "https://a2.test/" }),
+  ];
+  const out = T.buildExport([{ windowId: 1, groups, tabs }]);
+  assert.deepEqual(out.windows[0].groups.map((g) => g.title), ["A", "B"]);
+});
+
+test("import strips Tabo's marker so a restored archive is not re-bucketed", () => {
+  const M = T.MARKER;
+  // tabs.create cannot set lastAccessed, so imported tabs read as brand new and
+  // a marked group would be merged into "this week" on the next pass.
+  const result = T.planImport({
+    tabo: T.FORMAT,
+    windows: [
+      {
+        groups: [
+          { title: M + "2024", color: "grey", tabs: [{ url: "https://a.test/" }] },
+          { title: M + "This week", color: "green", tabs: [{ url: "https://b.test/" }] },
+          { title: "Work", color: "blue", tabs: [{ url: "https://c.test/" }] },
+        ],
+      },
+    ],
+  });
+  assert.deepEqual(
+    result.plan[0].groups.map((g) => g.title),
+    ["2024", "This week", "Work"],
+    "marked groups lose the clock; the user's own group is untouched"
+  );
+  assert.equal(result.stats.unmarked, 2, "how many were unmarked is reported, not hidden");
+  for (const g of result.plan[0].groups) {
+    assert.equal(T.isImportableUrl(g.tabs[0].url), true);
+    assert.ok(!g.title.startsWith(M), "no restored group keeps the marker");
+  }
+});
+
+test("restoredTitle only strips a leading marker and leaves everything else alone", () => {
+  const M = T.MARKER;
+  assert.equal(T.restoredTitle(M + "Last week"), "Last week");
+  assert.equal(T.restoredTitle("Work"), "Work");
+  assert.equal(T.restoredTitle(""), "");
+  assert.equal(T.restoredTitle("Read " + M + "later"), "Read " + M + "later", "marker must lead");
+});
+
+test("export keeps the marker, so a round trip freezes rather than losing names", () => {
+  const M = T.MARKER;
+  const g = group({ id: 5, title: M + "March 2026" });
+  const out = T.buildExport([
+    { windowId: 1, groups: [g], tabs: [tab({ index: 0, groupId: 5 })] },
+  ]);
+  assert.equal(out.windows[0].groups[0].title, M + "March 2026", "the file records what was there");
+  const back = T.planImport(JSON.parse(JSON.stringify(out)));
+  assert.equal(back.plan[0].groups[0].title, "March 2026", "stripping happens on the way in");
 });
 
 test("export preserves strip order within each bucket", () => {

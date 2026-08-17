@@ -114,6 +114,12 @@
           Each saved window opens as a <strong>new window</strong>. Your current
           tabs are not touched, moved or closed. Restored tabs come back
           unloaded, so nothing is fetched until you click it.
+          <br /><br />
+          Restored groups lose the 🕒 from their names, which hands them to you
+          permanently — Tabo will not re-sort or rename them. It has to work this
+          way: Firefox gives no way to restore a tab's last-active time, so a
+          restored archive would otherwise collapse into “this week” on the next
+          pass. Add the 🕒 back by hand if you want a group managed again.
         </div>
         <p><button id="go">Import</button></p>
       </section>
@@ -124,6 +130,7 @@
       </section>
     </main>
 
+    <script src="buckets.js"></script>
     <script src="portable.js"></script>
     <script src="import.js"></script>
   </body>
